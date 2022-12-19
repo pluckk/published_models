@@ -1,0 +1,44 @@
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Intialize workspace') {
+            steps {
+                sh """
+                pwd
+                mkdir temp
+                git log -n 2 --name-only --format='' > temp/gitReport.txt
+                """
+            }
+        }
+        stage('Initialize connections') {
+            environment {
+                GIT_REPO_CREDS = credentials("${params.GITOPS_GIT_CREDENTIAL}")
+            }
+            steps {
+                sh 'python3 ci/git_deployment/initializeConnections.py'
+            }
+        }
+        stage('Select updated deployment') {
+            steps {
+                sh 'python3 ci/git_deployment/findDeploymentPath.py'
+            }
+        }
+        stage('Update deployment descriptor') {
+            steps {
+                sh 'python3 ci/git_deployment/updateDescriptor.py'
+            }
+        }
+        stage('Push modelOps descriptor to Git') {
+            steps {
+                sh 'python3 ci/git_deployment/pushModelOpsDescriptor.py'
+            }
+        }
+    }
+    post {
+        always {
+            sh 'rm -r temp'
+        }
+    }
+}

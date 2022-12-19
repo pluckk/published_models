@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${sas-scr-published-name}
+  namespace: ${custom-scr-namespace}
+  labels:
+    app: ${sas-scr-published-name}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${sas-scr-published-name}
+  template:
+    metadata:
+      labels:
+        app: ${sas-scr-published-name}
+    spec:
+      containers:
+      - name: ${sas-scr-published-name}
+        image: ${sas-scr-image-url}
+        ports:
+        - containerPort: 8080
+          protocol: TCP
